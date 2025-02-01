@@ -13,6 +13,7 @@ jobs:
           - manylinux2014
           - manylinux_2_28
         target: [x86_64, aarch64, ppc64le, s390x]
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
 
     steps:
       - name: Github Checkout
@@ -21,7 +22,7 @@ jobs:
       - name: Python Setup
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: ${{ matrix.python-version }}
 
       - name: Build wheels
         uses: PyO3/maturin-action@v1
@@ -33,13 +34,13 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels_${{ matrix.manylinux }}_${{ matrix.target }}
+          name: wheels_${{ matrix.python-version }}_${{ matrix.manylinux }}_${{ matrix.target }}
           path: dist
   
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    # if: startsWith(github.ref, 'refs/tags/')
     needs: [ linux-build ]
     steps:
       - name: Download Build Artifacts
@@ -49,13 +50,14 @@ jobs:
 
       - name: Python Setup
         uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
 
-      - name: Publish to PyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: |
-          pip install --upgrade twine
-          twine upload --skip-existing wheels/**/*.whl
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
+      # - name: Publish to PyPI
+      #   env:
+      #     TWINE_USERNAME: __token__
+      #     TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      #   run: |
+      #     pip install --upgrade twine
+      #     twine upload --skip-existing wheels/**/*.whl
