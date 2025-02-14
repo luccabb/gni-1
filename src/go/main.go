@@ -8,7 +8,7 @@ package main
 
 import (
 	"fmt"
-	gni "gni/src/go/cgo"
+	gni "luccabb/gni-1/src/go/cgo"
 )
 
 func main() {
